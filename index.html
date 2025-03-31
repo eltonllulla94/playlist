@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+  <meta charset="UTF-8">
+  <title>Llogaritësi i Hapësirës në Playlist</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      padding: 40px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+    label {
+      display: block;
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 30px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005a9e;
+    }
+    .result {
+      margin-top: 30px;
+      font-size: 18px;
+      color: #333;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Llogaritësi i Hapësirës në Playlist</h2>
+
+    <label for="startTime">Ora e fillimit ("now" ose HH:mm:ss):</label>
+    <input type="text" id="startTime" value="now">
+
+    <label for="duration">Kohëzgjatja e videos (HH:mm:ss):</label>
+    <input type="text" id="duration">
+
+    <label for="endTime">Ora e përfundimit të dëshiruar (HH:mm:ss):</label>
+    <input type="text" id="endTime">
+
+    <button onclick="calculateGap()">Llogarit</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    function parseTime(str) {
+      const [hours, minutes, seconds] = str.split(":" ).map(Number);
+      const now = new Date();
+      now.setHours(hours, minutes, seconds || 0, 0);
+      return now;
+    }
+
+    function calculateGap() {
+      const startInput = document.getElementById("startTime").value.trim();
+      const durationInput = document.getElementById("duration").value.trim();
+      const endInput = document.getElementById("endTime").value.trim();
+      const result = document.getElementById("result");
+
+      try {
+        const now = new Date();
+        const start = (startInput.toLowerCase() === "now") ? now : parseTime(startInput);
+
+        const [durHours, durMinutes, durSeconds] = durationInput.split(":" ).map(Number);
+        const videoEnd = new Date(start.getTime());
+        videoEnd.setHours(videoEnd.getHours() + durHours);
+        videoEnd.setMinutes(videoEnd.getMinutes() + durMinutes);
+        videoEnd.setSeconds(videoEnd.getSeconds() + (durSeconds || 0));
+
+        const desiredEnd = parseTime(endInput);
+        const gapMillis = desiredEnd - videoEnd;
+
+        if (gapMillis > 0) {
+          const hours = Math.floor(gapMillis / (1000 * 60 * 60));
+          const minutes = Math.floor((gapMillis % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((gapMillis % (1000 * 60)) / 1000);
+          result.textContent = `🎬 Video përfundon në: ${videoEnd.toTimeString().substring(0,8)}\n⏱️ Hapësira: ${hours} orë, ${minutes} minuta, ${seconds} sekonda`;
+        } else {
+          result.textContent = `⚠️ Video përfundon pas ose në të njëjtën kohë me orën e caktuar.\nVideo përfundon në: ${videoEnd.toTimeString().substring(0,8)}`;
+        }
+      } catch (e) {
+        result.textContent = "❌ Formati gabim! Përdor stilin HH:mm:ss (p.sh. 20:15:00)";
+      }
+    }
+  </script>
+</body>
+</html>
